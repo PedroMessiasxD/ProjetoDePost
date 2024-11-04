@@ -1,0 +1,6 @@
+@ProjetoDePost_HostAddress = http://localhost:5103
+
+GET {{ProjetoDePost_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
