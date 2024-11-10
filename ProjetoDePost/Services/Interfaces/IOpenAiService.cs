@@ -5,6 +5,6 @@ namespace ProjetoDePost.Services.Interfaces
 {
     public interface IOpenAiService
     {
-        Task <Postagem> GerarPost(string tema, int quantidade);
+        Task<string> GerarIdeiasDePostagem(string promptDescricao, string temaPrincipal, int frequencia);
     }
 }

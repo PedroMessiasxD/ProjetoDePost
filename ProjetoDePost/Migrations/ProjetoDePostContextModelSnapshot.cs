@@ -22,6 +22,253 @@ namespace ProjetoDePost.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("varchar(13)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator().HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoDePost.Models.Campanha", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Aprovada")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("Ativa")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Frequencia")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FrequenciaMaxima")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TemaPrincipal")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.ToTable("Campanhas");
+                });
+
             modelBuilder.Entity("ProjetoDePost.Models.Empresa", b =>
                 {
                     b.Property<int>("Id")
@@ -34,7 +281,19 @@ namespace ProjetoDePost.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LinksRedesSociais")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SetorAtuacao")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -50,6 +309,52 @@ namespace ProjetoDePost.Migrations
                     b.ToTable("Empresas");
                 });
 
+            modelBuilder.Entity("ProjetoDePost.Models.HistoricoCampanha", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Aprovada")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("Ativa")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("CampanhaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConteudoGerado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NomeCampanha")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TemaPrincipal")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampanhaId");
+
+                    b.ToTable("HistoricoCampanhas");
+                });
+
             modelBuilder.Entity("ProjetoDePost.Models.ParticipanteEmpresa", b =>
                 {
                     b.Property<int>("Id")
@@ -57,6 +362,9 @@ namespace ProjetoDePost.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CampanhaId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("DataEntrada")
                         .HasColumnType("datetime(6)");
@@ -74,6 +382,8 @@ namespace ProjetoDePost.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CampanhaId");
+
                     b.HasIndex("EmpresaId");
 
                     b.HasIndex("UsuarioId");
@@ -89,10 +399,12 @@ namespace ProjetoDePost.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Conteudo")
+                    b.Property<int>("CampanhaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConteudoGerado")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime(6)");
@@ -100,26 +412,19 @@ namespace ProjetoDePost.Migrations
                     b.Property<bool>("Postado")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("ProjetoId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Tema")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("UsuarioId")
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjetoId");
+                    b.HasIndex("CampanhaId");
 
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("Postagens");
                 });
 
-            modelBuilder.Entity("ProjetoDePost.Models.Projeto", b =>
+            modelBuilder.Entity("ProjetoDePost.Models.SolicitacaoCadastroEmpresa", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -127,84 +432,179 @@ namespace ProjetoDePost.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Aprovado")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("DataSolicitacao")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DescricaoEmpresa")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("EmailAdministrador")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LinkRedeSocial")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NomeAdministrador")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NomeEmpresa")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SetorAtuacao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TelefoneAdministrador")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("SolicitacoesCadastroEmpresa", (string)null);
+                });
+
+            modelBuilder.Entity("ProjetoDePost.Models.SolicitacaoCampanha", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Aprovada")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Frequencia")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FrequenciaMaxima")
                         .HasColumnType("int");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("QuantidadeMaxPostagem")
-                        .HasColumnType("int");
+                    b.Property<string>("TemaPrincipal")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmpresaId");
-
-                    b.ToTable("Projetos");
+                    b.ToTable("SolicitacoesCampanha", (string)null);
                 });
 
             modelBuilder.Entity("ProjetoDePost.Models.Usuario", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .HasColumnType("longtext");
+                    b.Property<bool>("CadastroConfirmado")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("EmailConfirmed")
+                    b.Property<bool>("EAdministradorEmpresa")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("LockoutEnabled")
+                    b.Property<bool>("IsAdministradorGlobal")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
 
                     b.Property<string>("Sobrenome")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("tinyint(1)");
+                    b.HasDiscriminator().HasValue("Usuario");
+                });
 
-                    b.Property<string>("UserName")
-                        .HasColumnType("longtext");
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 
-                    b.HasKey("Id");
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 
-                    b.ToTable("Usuarios");
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ProjetoDePost.Models.Campanha", b =>
+                {
+                    b.HasOne("ProjetoDePost.Models.Empresa", "Empresa")
+                        .WithMany("Campanhas")
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
                 });
 
             modelBuilder.Entity("ProjetoDePost.Models.Empresa", b =>
@@ -222,8 +622,24 @@ namespace ProjetoDePost.Migrations
                     b.Navigation("Administrador");
                 });
 
+            modelBuilder.Entity("ProjetoDePost.Models.HistoricoCampanha", b =>
+                {
+                    b.HasOne("ProjetoDePost.Models.Campanha", "Campanha")
+                        .WithMany()
+                        .HasForeignKey("CampanhaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campanha");
+                });
+
             modelBuilder.Entity("ProjetoDePost.Models.ParticipanteEmpresa", b =>
                 {
+                    b.HasOne("ProjetoDePost.Models.Campanha", "Campanha")
+                        .WithMany("Participantes")
+                        .HasForeignKey("CampanhaId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("ProjetoDePost.Models.Empresa", "Empresa")
                         .WithMany("Participantes")
                         .HasForeignKey("EmpresaId")
@@ -236,6 +652,8 @@ namespace ProjetoDePost.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Campanha");
+
                     b.Navigation("Empresa");
 
                     b.Navigation("Usuario");
@@ -243,9 +661,9 @@ namespace ProjetoDePost.Migrations
 
             modelBuilder.Entity("ProjetoDePost.Models.Postagem", b =>
                 {
-                    b.HasOne("ProjetoDePost.Models.Projeto", "Projeto")
+                    b.HasOne("ProjetoDePost.Models.Campanha", "Campanha")
                         .WithMany("Postagens")
-                        .HasForeignKey("ProjetoId")
+                        .HasForeignKey("CampanhaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -253,30 +671,32 @@ namespace ProjetoDePost.Migrations
                         .WithMany("Postagens")
                         .HasForeignKey("UsuarioId");
 
-                    b.Navigation("Projeto");
+                    b.Navigation("Campanha");
                 });
 
-            modelBuilder.Entity("ProjetoDePost.Models.Projeto", b =>
+            modelBuilder.Entity("ProjetoDePost.Models.SolicitacaoCadastroEmpresa", b =>
                 {
-                    b.HasOne("ProjetoDePost.Models.Empresa", "Empresa")
-                        .WithMany("Projetos")
-                        .HasForeignKey("EmpresaId")
+                    b.HasOne("ProjetoDePost.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Empresa");
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("ProjetoDePost.Models.Campanha", b =>
+                {
+                    b.Navigation("Participantes");
+
+                    b.Navigation("Postagens");
                 });
 
             modelBuilder.Entity("ProjetoDePost.Models.Empresa", b =>
                 {
+                    b.Navigation("Campanhas");
+
                     b.Navigation("Participantes");
-
-                    b.Navigation("Projetos");
-                });
-
-            modelBuilder.Entity("ProjetoDePost.Models.Projeto", b =>
-                {
-                    b.Navigation("Postagens");
                 });
 
             modelBuilder.Entity("ProjetoDePost.Models.Usuario", b =>

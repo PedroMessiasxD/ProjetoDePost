@@ -22,6 +22,5 @@ namespace ProjetoDePost.Data.Repositories.Implementations
             _context = context;
         }
 
-        // Métodos específicos.
     }
 }

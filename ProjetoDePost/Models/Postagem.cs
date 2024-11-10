@@ -13,16 +13,11 @@ namespace ProjetoDePost.Models
         /// <summary>
         /// Identificador do projeto ao qual a postagem pertence.
         /// </summary>
-        [ForeignKey("Projeto")]
-        public int ProjetoId { get; set; }
-        public Projeto Projeto { get; set; }
-       
+        [ForeignKey("Campanha")]
+        public int CampanhaId { get; set; }
+        public Campanha Campanha { get; set; }
         public bool Postado { get; set; }
-        [Required]
-        public string Tema { get; set; }
-        [Required]
-        [StringLength(500)]
-        public string Conteudo { get; set; }
-        public DateTime DataCriacao { get; set; } = DateTime.Now;
+        public DateTime DataCriacao { get; set; } = DateTime.Now;        
+        public string ConteudoGerado { get; set; }
     }
 }

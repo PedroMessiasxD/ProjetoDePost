@@ -17,7 +17,7 @@ namespace ProjetoDePost.Models
         public string UsuarioId {  get; set; }
         
         // Navegação para o Usuário!
-        public Usuario Usuario { get; set; }
+        public virtual Usuario Usuario { get; set; }
 
         /// <summary>
         /// Identificador da empresa da qual o usuário participa.
@@ -27,6 +27,13 @@ namespace ProjetoDePost.Models
         
         // Navegação para a Empresa!
         public Empresa Empresa { get; set; }
+
+        /// <summary>
+        /// Relacionamento com a campanha
+        /// </summary>
+        [ForeignKey("Campanha")]
+        public int? CampanhaId { get; set; } 
+        public Campanha Campanha { get; set; }
 
         /// <summary>
         /// Papel do usuário dentro da empresa, como "Administrador" ou "Membro".

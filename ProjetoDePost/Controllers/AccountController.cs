@@ -7,6 +7,9 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using AutoMapper;
+using ProjetoDePost.Exceptions;
+using ProjetoDePost.Services.Implementations;
 
 namespace ProjetoDePost.Controllers
 {
@@ -15,15 +18,21 @@ namespace ProjetoDePost.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
+        private readonly ITokenService _tokenService;
         private readonly UserManager<Usuario> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public AccountController(IUsuarioService usuarioService, UserManager<Usuario> userManager, IConfiguration configuration)
+        public AccountController(IUsuarioService usuarioService, UserManager<Usuario> userManager, IConfiguration configuration, IMapper mapper, ITokenService tokenService)
         {
             _usuarioService = usuarioService;
+            _tokenService = tokenService;
+            _mapper = mapper;
             _userManager = userManager;
             _configuration = configuration;
         }
+
+
 
         ///<summary>
         /// Registrando um novo usuário
@@ -35,27 +44,18 @@ namespace ProjetoDePost.Controllers
             {
                 return BadRequest(ModelState);
             }
+            
+            var usuario = _mapper.Map<Usuario>(usuarioCreateDto);
 
-            if (usuarioCreateDto.Senha != usuarioCreateDto.ConfirmarSenha)
+            try
             {
-                return BadRequest("A senha e a confirmação de senha devem ser iguais!");
+                var usuarioCriado = await _usuarioService.CriarUsuarioAsync(usuario, usuarioCreateDto);
+                return Ok("Usuário registrado com sucesso.");
             }
-
-            var usuario = new Usuario
+            catch (UsuarioCriacaoException ex)
             {
-                UserName = usuarioCreateDto.Email,
-                Email = usuarioCreateDto.Email,
-                Nome = usuarioCreateDto.Nome,
-                Sobrenome = usuarioCreateDto.Sobrenome
-            };
-
-            var result = await _userManager.CreateAsync(usuario, usuarioCreateDto.Senha);
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Errors);
+                return BadRequest(ex.Message);
             }
-
-            return Ok("Usuário registrado com sucesso.");
         }
 
         ///<summary>
@@ -81,31 +81,8 @@ namespace ProjetoDePost.Controllers
                 return Unauthorized("Credenciais inválidas.");
             }
 
-            var token = GerarToken(usuario);
+            var token = _tokenService.GerarToken(usuario);
             return Ok(new { Token = token });
-        }
-
-        private string GerarToken (Usuario usuario)
-        {
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, usuario.Id),
-                new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
-                new Claim(ClaimTypes.Name, usuario.UserName)
-            };
-
-            var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: credenciais
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

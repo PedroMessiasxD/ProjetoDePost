@@ -5,6 +5,6 @@ namespace ProjetoDePost.Data.Repositories.Interfaces
 {
     public interface IUsuarioRepository : IGenericRepository<Usuario>
     {
-        // Se preciso, eu coloco métodos específicos.
+      
     }
 }

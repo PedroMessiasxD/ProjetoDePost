@@ -10,16 +10,18 @@ namespace ProjetoDePost.Models
     {
         public int Id { get; set; }
         public string Nome { get; set; }
-        
+        public string Descricao { get; set; }
+        public string SetorAtuacao { get; set; }
+        public string LinksRedesSociais { get; set; }
+
+
         /// <summary>
         /// Identificador do administrador da empresa.
-        /// Refere-se ao usuário que criou e administra a empresa.
+        /// Refere-se ao usuário que possui permissões de administrar à empresa.
         /// </summary>
         [ForeignKey("Administrador")]
         public string AdministradorId {  get; set; }
-
-        // Referência para o Usuário que é o administrador dessa empresa!
-        public Usuario Administrador { get; set; }
+        public Usuario Administrador { get; set; } // Referência para o Usuário que é o administrador dessa empresa!
 
 
         /// <summary>
@@ -30,8 +32,6 @@ namespace ProjetoDePost.Models
         /// <summary>
         /// Lista de Projetos da Empresa.
         /// </summary>
-        public ICollection<Projeto> Projetos { get; set; } = new List<Projeto>();
-
-
+        public ICollection<Campanha> Campanhas { get; set; } = new List<Campanha>();
     }
 }
