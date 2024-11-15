@@ -49,5 +49,11 @@ namespace ProjetoDePost.Data.Repositories.Implementations
             await _context.ParticipanteEmpresas.AddAsync(participanteEmpresa);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<ParticipanteEmpresa> BuscarPorUsuarioIdEEmpresaIdAsync(string usuarioId, int empresaId)
+        {
+            return await _context.ParticipanteEmpresas
+                .FirstOrDefaultAsync(pe => pe.UsuarioId == usuarioId && pe.EmpresaId == empresaId);
+        }
     }
 }

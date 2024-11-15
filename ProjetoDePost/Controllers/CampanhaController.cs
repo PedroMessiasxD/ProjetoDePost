@@ -71,23 +71,6 @@ namespace ProjetoDePost.Controllers
         }
 
         /// <summary>
-        /// Remove uma campanha específica.
-        /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> RemoverCampanha(int id)
-        {
-            try
-            {
-                await _campanhaService.RemoverCampanha(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound("Campanha não encontrada.");
-            }
-        }
-
-        /// <summary>
         /// Obtém todas as solicitações de campanha pendentes.
         /// </summary>
         [HttpGet("solicitacoes/pendentes")]

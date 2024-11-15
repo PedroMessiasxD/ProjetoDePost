@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using ProjetoDePost.Data.Repositories.Implementations.Generic;
 using ProjetoDePost.Data.Repositories.Interfaces;
 using ProjetoDePost.Models;
@@ -16,11 +17,14 @@ namespace ProjetoDePost.Data.Repositories.Implementations
     public class UsuarioRepository : GenericRepository<Usuario>, IUsuarioRepository
     {
         private readonly ProjetoDePostContext _context;
-
+        
         public UsuarioRepository(ProjetoDePostContext context) : base(context)
         {
             _context = context;
+            
         }
+
+       
 
     }
 }

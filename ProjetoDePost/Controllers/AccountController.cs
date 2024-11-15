@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
 using ProjetoDePost.Exceptions;
 using ProjetoDePost.Services.Implementations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProjetoDePost.Controllers
 {
@@ -22,14 +23,18 @@ namespace ProjetoDePost.Controllers
         private readonly UserManager<Usuario> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly IAuthService _authService;
 
-        public AccountController(IUsuarioService usuarioService, UserManager<Usuario> userManager, IConfiguration configuration, IMapper mapper, ITokenService tokenService)
+
+        public AccountController(IUsuarioService usuarioService, UserManager<Usuario> userManager, 
+            IConfiguration configuration, IMapper mapper, ITokenService tokenService, IAuthService authService)
         {
             _usuarioService = usuarioService;
             _tokenService = tokenService;
             _mapper = mapper;
             _userManager = userManager;
             _configuration = configuration;
+            _authService = authService;
         }
 
 
@@ -44,45 +49,32 @@ namespace ProjetoDePost.Controllers
             {
                 return BadRequest(ModelState);
             }
-            
-            var usuario = _mapper.Map<Usuario>(usuarioCreateDto);
 
-            try
-            {
-                var usuarioCriado = await _usuarioService.CriarUsuarioAsync(usuario, usuarioCreateDto);
-                return Ok("Usuário registrado com sucesso.");
-            }
-            catch (UsuarioCriacaoException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return await _authService.Registrar(usuarioCreateDto);
         }
 
         ///<summary>
         /// Logando um usuário
         /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UsuarioLoginDto usuarioLoginDto)
+        public async Task<IActionResult> Login([FromBody] UsuarioLoginDto model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            return await _authService.Login(model);
+        }
 
-            var usuario = await _userManager.FindByEmailAsync(usuarioLoginDto.Email);
-            if (usuario == null)
-            {
-                return Unauthorized("Credenciais inválidas.");
-            }
-
-            var passwordCheck = await _userManager.CheckPasswordAsync(usuario, usuarioLoginDto.Senha);
-            if (!passwordCheck)
-            {
-                return Unauthorized("Credenciais inválidas.");
-            }
-
-            var token = _tokenService.GerarToken(usuario);
-            return Ok(new { Token = token });
+        [HttpGet("confirmar-email")]
+        public async Task<IActionResult> ConfirmarEmail(string email)
+        {
+             return await _authService.ConfirmarEmail(email);
+        }
+        
+        //[Authorize]
+        [HttpPost("logout")]
+        public ActionResult Logout([FromServices] AuthService authService)
+        {          
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");          
+            authService.Logout(token);
+            return NoContent();
         }
     }
 }

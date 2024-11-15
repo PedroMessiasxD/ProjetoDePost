@@ -22,7 +22,7 @@ namespace ProjetoDePost.Services.Implementations
             _apiKey = configuration["OpenAI:ApiKey"];
             _logger = logger;
         }
-        
+
         /// <summary>
         /// Método que molda a resposta da API com base no prompt.
         /// </summary>
@@ -30,14 +30,16 @@ namespace ProjetoDePost.Services.Implementations
         /// <param name="temaPrincipal"></param>
         /// <param name="frequencia"></param>
         /// <returns>Resposta da API externa</returns>
-        
+
         public async Task<string> GerarIdeiasDePostagem(string promptDescricao, string temaPrincipal, int frequencia)
         {
-            
+
             var client = new ChatClient(model: "gpt-4o-mini", _apiKey);
 
             var prompt = $"Crie ideias de postagens para a seguinte descrição: '{promptDescricao}." +
-                         $"O tema principal é '{temaPrincipal} e queremos {frequencia} ideias diferentes.";
+                         $"O tema principal é '{temaPrincipal} e queremos {frequencia} ideias diferentes." +
+                         $"Traga a resposta começando com a seguinte frase: 'Aqui estão as postagens :' " +
+                         $"Separe cada ideia com esse caractér especial <--->";
 
                 var completion = await client.CompleteChatAsync(prompt);
                 var responseJson = JsonConvert.SerializeObject(completion);

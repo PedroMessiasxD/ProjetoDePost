@@ -12,8 +12,8 @@ using ProjetoDePost.Data;
 namespace ProjetoDePost.Migrations
 {
     [DbContext(typeof(ProjetoDePostContext))]
-    [Migration("20241107172111_AddingPostagem")]
-    partial class AddingPostagem
+    [Migration("20241114233353_Fx")]
+    partial class Fx
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -238,22 +238,28 @@ namespace ProjetoDePost.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Aprovada")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("Ativa")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<int>("EmpresaId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FrequenciaPostagem")
+                    b.Property<int>("Frequencia")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FrequenciaMaxima")
                         .HasColumnType("int");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<string>("PublicoAlvo")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("QuantidadeMaxPostagem")
-                        .HasColumnType("int");
 
                     b.Property<string>("TemaPrincipal")
                         .IsRequired()
@@ -294,16 +300,56 @@ namespace ProjetoDePost.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("varchar(255)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AdministradorId");
 
-                    b.HasIndex("UsuarioId");
-
                     b.ToTable("Empresas");
+                });
+
+            modelBuilder.Entity("ProjetoDePost.Models.HistoricoCampanha", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Aprovada")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("Ativa")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("CampanhaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConteudoGerado")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NomeCampanha")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TemaPrincipal")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampanhaId");
+
+                    b.ToTable("HistoricoCampanhas");
                 });
 
             modelBuilder.Entity("ProjetoDePost.Models.ParticipanteEmpresa", b =>
@@ -353,37 +399,19 @@ namespace ProjetoDePost.Migrations
                     b.Property<int>("CampanhaId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Conteudo")
+                    b.Property<string>("ConteudoGerado")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("ImagemUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<bool>("Postado")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Tema")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("TomLinguagem")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CampanhaId");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Postagens");
                 });
@@ -445,21 +473,49 @@ namespace ProjetoDePost.Migrations
                     b.ToTable("SolicitacoesCadastroEmpresa", (string)null);
                 });
 
+            modelBuilder.Entity("ProjetoDePost.Models.SolicitacaoCampanha", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Aprovada")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Frequencia")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FrequenciaMaxima")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TemaPrincipal")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SolicitacoesCampanha", (string)null);
+                });
+
             modelBuilder.Entity("ProjetoDePost.Models.Usuario", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
-                    b.Property<bool>("CadastroConfirmado")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("EAdministradorEmpresa")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsAdministradorGlobal")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -542,11 +598,18 @@ namespace ProjetoDePost.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ProjetoDePost.Models.Usuario", null)
-                        .WithMany("EmpresasCriadas")
-                        .HasForeignKey("UsuarioId");
-
                     b.Navigation("Administrador");
+                });
+
+            modelBuilder.Entity("ProjetoDePost.Models.HistoricoCampanha", b =>
+                {
+                    b.HasOne("ProjetoDePost.Models.Campanha", "Campanha")
+                        .WithMany()
+                        .HasForeignKey("CampanhaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campanha");
                 });
 
             modelBuilder.Entity("ProjetoDePost.Models.ParticipanteEmpresa", b =>
@@ -583,10 +646,6 @@ namespace ProjetoDePost.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjetoDePost.Models.Usuario", null)
-                        .WithMany("Postagens")
-                        .HasForeignKey("UsuarioId");
-
                     b.Navigation("Campanha");
                 });
 
@@ -617,11 +676,7 @@ namespace ProjetoDePost.Migrations
 
             modelBuilder.Entity("ProjetoDePost.Models.Usuario", b =>
                 {
-                    b.Navigation("EmpresasCriadas");
-
                     b.Navigation("ParticipanteEmpresas");
-
-                    b.Navigation("Postagens");
                 });
 #pragma warning restore 612, 618
         }

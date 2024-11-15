@@ -19,23 +19,21 @@ namespace ProjetoDePost.Services
         private readonly IMapper _mapper;
         private readonly ISolicitacaoCampanhaRepository _solicitacaoCampanhaRepository;
         private readonly ProjetoDePostContext _context;
-        private readonly IPostagemService _postagemService;
         private readonly IPostagemRepository _postagemRepository;
         private readonly ILogger<CampanhaService> _logger;
-        private readonly IHistoricoCampanhaRepository _historicoCampanhaRepository;
+        private readonly IHistoricoCampanhaService _historicoCampanhaService;
 
-        public CampanhaService(ICampanhaRepository campanhaRepository, 
+        public CampanhaService(ICampanhaRepository campanhaRepository,
             IMapper mapper, ISolicitacaoCampanhaRepository solicitacaoCampanhaRepository,
-            ProjetoDePostContext context, IPostagemService postagemService, ILogger<CampanhaService> logger,
-            IHistoricoCampanhaRepository historicoCampanhaRepository)
+            ProjetoDePostContext context, ILogger<CampanhaService> logger,
+             IHistoricoCampanhaService historicoCampanhaService)
         {
             _campanhaRepository = campanhaRepository;
             _mapper = mapper;
             _solicitacaoCampanhaRepository = solicitacaoCampanhaRepository;
             _context = context;
-            _postagemService = postagemService;
             _logger = logger;
-            _historicoCampanhaRepository = historicoCampanhaRepository;
+            _historicoCampanhaService = historicoCampanhaService;
         }
 
         /// <summary>
@@ -111,52 +109,22 @@ namespace ProjetoDePost.Services
 
             var novaCampanha = _mapper.Map<Campanha>(solicitacao);
             novaCampanha.Aprovada = true;
-            
+            novaCampanha.Ativa = false;
             await _campanhaRepository.CriarAsync(novaCampanha);
-            try
-            {
 
-
-                var historicoCampanha = _mapper.Map<HistoricoCampanha>(novaCampanha);
-                historicoCampanha.ConteudoGerado = string.Empty;
-                historicoCampanha.Ativa = false;
-                await _historicoCampanhaRepository.AdicionarHistoricoAsync(historicoCampanha);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                
-            }
-            /*
-            // Aqui eu estou verificando se a lista de postagens possui algum item.
-            if (novaCampanha.Postagens.Any())
-            {
-                // Mapeando e registrando o histórico da campanha
-                var historicoCampanha = _mapper.Map<HistoricoCampanha>(novaCampanha);
-                historicoCampanha.ConteudoGerado = string.Empty;
-                historicoCampanha.Ativa = false;
-
-                // Salvando o histórico
-                await _historicoCampanhaRepository.AdicionarHistoricoAsync(historicoCampanha);
-            }
-            else
-            {
-                // Tô tentando entender o porquê não está sendo passado.
-                Console.WriteLine("A campanha não possui postagens associadas, o histórico não foi registrado.");
-            }
-            */
+            await _historicoCampanhaService.GuardarHistorico(novaCampanha);
 
             await _solicitacaoCampanhaRepository.DeletarAsync(solicitacaoCampanhaId);
-            
+
             await _context.SaveChangesAsync();
-            
+
             return novaCampanha;
         }
 
         public async Task RecusarCampanha(int solicitacaoCampanhaId)
         {
             var solicitacao = await _solicitacaoCampanhaRepository.BuscarPorIdAsync(solicitacaoCampanhaId);
-            
+
             if (solicitacao == null)
             {
                 throw new KeyNotFoundException("Solicitação de campanha não encontrada.");
@@ -186,6 +154,24 @@ namespace ProjetoDePost.Services
             return solicitacoesPendentesDto;
         }
 
-       
+        public async Task<Campanha> AbandonarCampanha(int campanhaId)
+        {
+            
+            var campanha = await _campanhaRepository.BuscarPorIdAsync(campanhaId);
+            if (campanha == null)
+                throw new KeyNotFoundException("Campanha não encontrada.");
+            if (campanha.Ativa == false)
+            {
+                throw new Exception("Campanha já inativa.");
+            }
+            campanha.Ativa = false;
+            await _campanhaRepository.AtualizarAsync(campanha);
+            
+            await _historicoCampanhaService.GuardarHistorico(campanha);
+
+            return campanha;
+
+
+        }
     }
 }

@@ -1,105 +1,42 @@
-﻿/*using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using ProjetoDePost.Models;
 
 public static class SeedDataService
 {
-    public static async Task CriarUsuarioAdministrador(IServiceProvider serviceProvider)
+    public static async Task InitializeAsync(IServiceProvider serviceProvider)
     {
-        var userManager = serviceProvider.GetRequiredService<UserManager<Usuario>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<Usuario>>();
 
-        // Definir a role de administrador global
-        var adminRole = "AdminGlobal";
-        var adminEmail = "admin@admin.com"; // Defina o e-mail do administrador
-        var adminPassword = "SenhaForte123!"; // Senha inicial para o administrador
+        // Definindo as roles que queremos no sistema
+        string[] roleNames = { "AdminGlobal", "AdminEmpresarial", "ParticipanteEmpresa", "Usuario" };
 
+        foreach (var roleName in roleNames)
+        { 
         
-
-        // Log de depuração para criação da role
-        Console.WriteLine("Verificando a criação da role 'AdminGlobal'...");
-
-        // Criar a role "AdminGlobal" se ela não existir
-        if (await roleManager.FindByNameAsync(adminRole) == null)
-        {
-            Console.WriteLine("Role 'AdminGlobal' não encontrada. Criando...");
-            var roleResult = await roleManager.CreateAsync(new IdentityRole(adminRole));
-            if (!roleResult.Succeeded)
+            if (!await roleManager.RoleExistsAsync(roleName))
             {
-                Console.WriteLine($"Erro ao criar role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
-                throw new Exception($"Erro ao criar a role '{adminRole}': {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
-            }
-            else
-            {
-                Console.WriteLine("Role 'AdminGlobal' criada com sucesso.");
+                await roleManager.CreateAsync(new IdentityRole(roleName));
             }
         }
-        else
+
+        var adminUser = new Usuario
         {
-            Console.WriteLine($"A role '{adminRole}' já existe.");
-        }
+            UserName = "adminGlobal",
+            Email = "admin@projetodepost.com",
+            EmailConfirmed = true
+        };
 
-        // Verificar se o usuário administrador já existe
-        var user = await userManager.FindByEmailAsync(adminEmail);
-
+        var user = await userManager.FindByEmailAsync(adminUser.Email);
         if (user == null)
         {
-            // Se o usuário não existir, criá-lo
-            Console.WriteLine($"Usuário '{adminEmail}' não encontrado. Criando o usuário administrador...");
-            user = new Usuario
+            // Cria o usuário com a senha padrão
+            var createPowerUser = await userManager.CreateAsync(adminUser, "Admin@12345");
+            if (createPowerUser.Succeeded)
             {
-                UserName = adminEmail,
-                Email = adminEmail,
-                // Adicione outras propriedades do usuário, como Nome, etc., se necessário
-            };
-
-            var result = await userManager.CreateAsync(user, adminPassword);
-
-            if (result.Succeeded)
-            {
-                Console.WriteLine($"Usuário '{adminEmail}' criado com sucesso.");
-
-                // Atribuir a role de AdminGlobal ao novo usuário
-                Console.WriteLine($"Atribuindo a role '{adminRole}' ao usuário '{adminEmail}'...");
-                var addRoleResult = await userManager.AddToRoleAsync(user, adminRole);
-                if (!addRoleResult.Succeeded)
-                {
-                    Console.WriteLine($"Erro ao adicionar a role '{adminRole}' ao usuário: {string.Join(", ", addRoleResult.Errors.Select(e => e.Description))}");
-                    throw new Exception($"Erro ao adicionar a role '{adminRole}' ao usuário: {string.Join(", ", addRoleResult.Errors.Select(e => e.Description))}");
-                }
-                else
-                {
-                    Console.WriteLine($"Role '{adminRole}' atribuída ao usuário '{adminEmail}' com sucesso.");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Erro ao criar o usuário administrador: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                throw new Exception($"Erro ao criar o usuário administrador: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                // Adiciona a role AdminGlobal ao usuário criado
+                await userManager.AddToRoleAsync(adminUser, "AdminGlobal");
             }
         }
-        else
-        {
-            // Se o usuário já existir, apenas adicione a role se ele não tiver
-            Console.WriteLine($"Usuário '{adminEmail}' já existe. Verificando se a role '{adminRole}' já foi atribuída...");
-            if (!await userManager.IsInRoleAsync(user, adminRole))
-            {
-                Console.WriteLine($"Usuário '{adminEmail}' não tem a role '{adminRole}'. Atribuindo...");
-                var addRoleResult = await userManager.AddToRoleAsync(user, adminRole);
-                if (!addRoleResult.Succeeded)
-                {
-                    Console.WriteLine($"Erro ao adicionar a role '{adminRole}' ao usuário: {string.Join(", ", addRoleResult.Errors.Select(e => e.Description))}");
-                    throw new Exception($"Erro ao adicionar a role '{adminRole}' ao usuário: {string.Join(", ", addRoleResult.Errors.Select(e => e.Description))}");
-                }
-                else
-                {
-                    Console.WriteLine($"Role '{adminRole}' atribuída ao usuário '{adminEmail}' com sucesso.");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Usuário '{adminEmail}' já possui a role '{adminRole}'.");
-            }
-        }
-    }
+    } 
 }
-*/

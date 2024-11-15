@@ -23,12 +23,14 @@ namespace ProjetoDePost.Services.Implementations
         private readonly IOpenAiService _openAiService;
         private readonly ILogger<PostagemService> _logger;
         private readonly ProjetoDePostContext _context;
-        private readonly ICampanhaService _campanhaService;
-        private readonly IHistoricoCampanhaRepository _historicoCampanhaRepository;
+        private readonly ICampanhaService _campanhaService;       
+        private readonly IHistoricoCampanhaService _historicoCampanhaService;
+        private readonly INotificacaoService _notificacaoService;
 
         public PostagemService(IPostagemRepository postagemRepository, IMapper mapper, IOpenAiService openAiService, 
             ICampanhaRepository campanhaRepository, ILogger<PostagemService> logger,
-            ProjetoDePostContext context, IHistoricoCampanhaRepository historicoCampanhaRepository)
+            ProjetoDePostContext context, IHistoricoCampanhaRepository historicoCampanhaRepository,
+            IHistoricoCampanhaService historicoCampanhaService, INotificacaoService notificacaoService)
         {
             _postagemRepository = postagemRepository;
             _mapper = mapper;
@@ -36,7 +38,8 @@ namespace ProjetoDePost.Services.Implementations
             _campanhaRepository = campanhaRepository;
             _logger = logger;
             _context = context;
-            _historicoCampanhaRepository = historicoCampanhaRepository;
+            _historicoCampanhaService = historicoCampanhaService;
+            _notificacaoService = notificacaoService;
         }
         
         public async Task<IEnumerable<PostagemReadDto>> BuscarPorCampanhaIdAsync(int campanhaId)
@@ -54,26 +57,26 @@ namespace ProjetoDePost.Services.Implementations
                 throw new KeyNotFoundException("Campanha não encontrada");
             }
 
-            // Verifica se as configurações de frequência da campanha são válidas antes de continuar.
+           
             if (campanha.FrequenciaMaxima <= 0 || campanha.Frequencia <= 0)
             {
                 _logger.LogError($"Configurações de frequência incorretas: FrequenciaMaxima = {campanha.FrequenciaMaxima}, Frequencia = {campanha.Frequencia}");
                 throw new Exception("Configurações de frequência da campanha estão incorretas.");
             }
 
-            // Verifica se o limite de postagens foi atingido.
+            
             if (!await PodeGerarPostagemAsync(postagemCreateDto.CampanhaId, campanha.FrequenciaMaxima))
             {
                 throw new Exception("Limite de postagens para hoje atingido.");
             }
 
-            // Verificar se a descrição, tema e frequência estão válidos antes de gerar conteúdo
+           
             if (string.IsNullOrWhiteSpace(campanha.Descricao) || string.IsNullOrWhiteSpace(campanha.TemaPrincipal) || campanha.Frequencia <= 0)
             {
                 throw new Exception("A descrição, o tema ou a frequência da campanha estão inválidos.");
             }
 
-            // Tenta gerar o conteúdo da postagem a partir da API da OpenAI.
+            
             string conteudoGerado;
             try
             {
@@ -101,40 +104,26 @@ namespace ProjetoDePost.Services.Implementations
                 ConteudoGerado = conteudoGerado
             };
             await _postagemRepository.CriarAsync(postagem);
+            
+            campanha.Ativa = true;
+            await _campanhaRepository.AtualizarAsync(campanha);
+            
+            await _historicoCampanhaService.GuardarHistorico(campanha, conteudoGerado);
 
-            var historicoCampanhas = await _historicoCampanhaRepository.ObterHistoricoPorEmpresaAsync(campanha.Id);
-            var historicoExistente = historicoCampanhas.FirstOrDefault(h => h.CampanhaId == campanha.Id);
-            if (historicoExistente != null)
+            try
             {
-                historicoExistente.ConteudoGerado = conteudoGerado;
-                historicoExistente.NomeCampanha = campanha.Nome;
-                historicoExistente.TemaPrincipal = campanha.TemaPrincipal;
-                historicoExistente.Ativa = true;
-                await _historicoCampanhaRepository.AtualizarHistoricoAsync(historicoExistente);
+                await _notificacaoService.EnviarPostagemEmailAsync(campanha, conteudoGerado);
+                _logger.LogInformation("E-mails enviados com sucesso para os participantes da campanha.");
             }
-            else
+            catch (Exception ex)
             {
-                // Caso o histórico não exista, cria um novo histórico
-                var novoHistorico = _mapper.Map<HistoricoCampanha>(campanha);  // Mapeia para a entidade HistoricoCampanha
-                novoHistorico.ConteudoGerado = conteudoGerado;
-                novoHistorico.NomeCampanha = campanha.Nome; // Inclui o nome da campanha
-                novoHistorico.TemaPrincipal = campanha.TemaPrincipal; // Inclui o tema principal
-
-                await _historicoCampanhaRepository.AdicionarHistoricoAsync(novoHistorico); 
+                _logger.LogError($"Erro ao enviar e-mails para os participantes: {ex.Message}");
             }
 
             _logger.LogInformation($"Postagem {postagem.Id} criada com sucesso com conteúdo gerado: {conteudoGerado}");
            
             return _mapper.Map<PostagemReadDto>(postagem);
           
-            /*return new PostagemReadDto
-            {
-                Id = postagem.Id,
-                CampanhaId = campanha.Id,
-                DataCriacao = postagem.DataCriacao,
-                ConteudoGerado = conteudoGerado
-            };
-            */
         }
 
 

@@ -14,7 +14,9 @@ namespace ProjetoDePost.Profiles
                 .ForMember(dest => dest.EmpresaId, opt => opt.MapFrom(src => src.EmpresaId))
                 .ForMember(dest => dest.Papel, opt => opt.MapFrom(src => src.Papel))
                 .ForMember(dest => dest.DataEntrada, opt => opt.MapFrom(src => src.DataEntrada))
-                .ForMember(dest => dest.CampanhaId, opt => opt.MapFrom(src => src.CampanhaId));
+                .ForMember(dest => dest.CampanhaId, opt => opt.MapFrom(src => src.CampanhaId))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Usuario.Email));
+                
             // Mapeamento para criação (Create)
             CreateMap<ParticipanteEmpresaCreateDto, ParticipanteEmpresa>()
                 .ForMember(dest => dest.Papel, opt => opt.MapFrom(src => src.Papel))

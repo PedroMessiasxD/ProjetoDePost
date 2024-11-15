@@ -8,7 +8,7 @@ namespace ProjetoDePost.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize(Roles = "AdminEmpresarial")]
+    [Authorize(Roles = "AdminEmpresarial")]
     public class AdminEmpresarialController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
@@ -31,7 +31,7 @@ namespace ProjetoDePost.Controllers
         {
             try
             {
-               /* // Verifica se o usuário tem permissão para associar usuários na empresa
+                // Verifica se o usuário tem permissão para associar usuários na empresa
                 var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var usuario = await _usuarioService.BuscarUsuarioPorIdAsync(usuarioId);
 
@@ -41,8 +41,7 @@ namespace ProjetoDePost.Controllers
                 {
                     return Unauthorized("Você não tem permissão para associar usuários nesta empresa.");
                 }
-               */
-                // Busca o usuário registrado pelo e-mail
+               
                 var usuarioRegistrado = await _usuarioService.BuscarUsuarioPorEmailAsync(email);
                 if (usuarioRegistrado == null)
                 {
@@ -75,7 +74,7 @@ namespace ProjetoDePost.Controllers
         {
             try
             {
-                /*
+                
                 // Verifica se o usuário tem permissão para associar usuários na empresa
                 var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var usuario = await _usuarioService.BuscarUsuarioPorIdAsync(usuarioId);
@@ -86,7 +85,12 @@ namespace ProjetoDePost.Controllers
                 {
                     return Unauthorized("Você não tem permissão para associar usuários nesta empresa.");
                 }
-                */
+
+                var estaAssociado = await _participanteEmpresaService.VerificarSeUsuarioEstaAssociadoEmpresa(usuarioId, empresaId);
+                if (!estaAssociado)
+                {
+                    return BadRequest("O usuario não está associado a esta empresa.");
+                }
                 // Busca o usuário registrado pelo e-mail
                 var usuarioRegistrado = await _usuarioService.BuscarUsuarioPorEmailAsync(email);
                 if (usuarioRegistrado == null)
@@ -94,7 +98,7 @@ namespace ProjetoDePost.Controllers
                     return NotFound("Usuário não encontrado.");
                 }
 
-                // Associa o usuário à campanha
+                
                 var participanteEmpresaCreateDto = new ParticipanteEmpresaCreateDto
                 {
                     UsuarioId = usuarioRegistrado.Id,
@@ -167,5 +171,24 @@ namespace ProjetoDePost.Controllers
                     return BadRequest($"Erro ao recusar a campanha: {ex.Message}");
                 }
             }
+
+        [HttpPut("abandonar/{id}")]
+        public async Task<IActionResult> AbandonarCampanha(int id)
+        {
+            try
+            {
+                var campanha = await _campanhaService.AbandonarCampanha(id);
+                return Ok(campanha);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Campanha não encontrada.");
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "Ocorreu um erro ao abandonar a campanha.");
+            }
         }
+    }
     }

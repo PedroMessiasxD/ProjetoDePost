@@ -17,7 +17,7 @@ namespace ProjetoDePost.Profiles
                .ForMember(dest => dest.Nome, opt => opt.MapFrom(src => src.Nome))
                 .ForMember(dest => dest.EmpresaId, opt => opt.MapFrom(src => src.EmpresaId))
                 .ForMember(dest => dest.TemaPrincipal, opt => opt.MapFrom(src => src.TemaPrincipal))
-                .ForMember(dest => dest.Frequencia, opt => opt.MapFrom(src => src.Frequencia))  // Mapeando FrequenciaPostagem
+                .ForMember(dest => dest.Frequencia, opt => opt.MapFrom(src => src.Frequencia)) 
                 .ForMember(dest => dest.Descricao, opt => opt.MapFrom(src => src.Descricao));
 
             // Mapeamento CampanhaCreateDto para SolicitacaoCampanha
@@ -64,7 +64,7 @@ namespace ProjetoDePost.Profiles
              .ForMember(dest => dest.DataCriacao, opt => opt.MapFrom(src => DateTime.UtcNow))  // Define a data de criação do histórico
              .ForMember(dest => dest.Aprovada, opt => opt.MapFrom(src => src.Aprovada))  // Marca como aprovada
              .ForMember(dest => dest.Ativa, opt => opt.MapFrom(src => src.Ativa)) // Marca como ativa
-             .ForMember(dest => dest.ConteudoGerado, opt => opt.MapFrom(src => GetConteudoGerado(src)));            
+             .ForMember(dest => dest.ConteudoGerado, opt => opt.MapFrom(src => GetConteudoGerado(src)));
         }
         private string GetConteudoGerado(Campanha campanha)
         {

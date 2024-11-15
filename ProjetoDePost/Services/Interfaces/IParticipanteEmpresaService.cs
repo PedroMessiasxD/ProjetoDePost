@@ -13,5 +13,6 @@ namespace ProjetoDePost.Services.Interfaces
         Task<bool> VerificarSeUsuarioEhAdminEmpresarial(string usuarioId, int empresaId);
         Task AdicionarUsuarioNaEmpresaAsync(ParticipanteEmpresaCreateDto participanteEmpresaCreateDto);
         Task<ParticipanteEmpresaReadDto> AdicionarParticipanteACampanhaAsync(ParticipanteEmpresaCreateDto participanteEmpresaCreateDto, int campanhaId);
+        Task<bool> VerificarSeUsuarioEstaAssociadoEmpresa(string usuarioId, int empresaId);
     }
 }

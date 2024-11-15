@@ -9,6 +9,7 @@ namespace ProjetoDePost.Profiles
         public SolicitacaoCadastroEmpresaProfile()
         {
             CreateMap<SolicitacaoCadastroEmpresaDto, SolicitacaoCadastroEmpresa>();
+
             CreateMap<SolicitacaoCadastroEmpresa, SolicitacaoCadastroEmpresaRespostaDto>()
                 .ForMember(dest => dest.SolicitacaoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Mensagem, opt => opt.MapFrom(src => "Solicitação pendente de aprovação."));

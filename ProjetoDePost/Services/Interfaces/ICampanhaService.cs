@@ -16,6 +16,7 @@ namespace ProjetoDePost.Services.Interfaces
         Task<Campanha> AceitarCampanha(int solicitacaoCampanhaId);
         Task RecusarCampanha(int solicitacaoCampanhaId);
         Task<IEnumerable<SolicitacaoCampanhaReadDto>> ObservarSolicitacoesAsync();
+        Task<Campanha> AbandonarCampanha(int campanhaId);
 
     }
 }

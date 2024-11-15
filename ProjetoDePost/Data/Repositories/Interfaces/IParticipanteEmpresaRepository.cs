@@ -20,5 +20,8 @@ namespace ProjetoDePost.Data.Repositories.Interfaces
         Task<ParticipanteEmpresa> BuscarPorCondicaoAsync(Expression<Func<ParticipanteEmpresa, bool>> predicate);
 
         Task<ParticipanteEmpresa> ObterPorIdAsync(int participanteId);
+
+        Task<ParticipanteEmpresa> BuscarPorUsuarioIdEEmpresaIdAsync(string usuarioId, int empresaId);
+       
     }
 }

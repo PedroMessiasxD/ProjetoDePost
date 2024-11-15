@@ -5,6 +5,7 @@ using ProjetoDePost.Data.Repositories.Implementations;
 using ProjetoDePost.Data.Repositories.Implementations.Generic;
 using ProjetoDePost.Data.Repositories.Interfaces;
 using ProjetoDePost.Data.Repositories.Interfaces.Generic;
+using ProjetoDePost.Data.Validations;
 using ProjetoDePost.Models;
 using ProjetoDePost.Services.Implementations;
 using ProjetoDePost.Services.Interfaces;
@@ -17,13 +18,17 @@ using ProjetoDePost.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using ProjetoDePost.Profiles;
 using Serilog;
+using ProjetoDePost.Middleware;
+using System.Security.Claims;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); /*(options =>
+builder.Services.AddSwaggerGen(options =>
 {
     // Adiciona a configuração de segurança
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -35,11 +40,11 @@ builder.Services.AddSwaggerGen(); /*(options =>
         BearerFormat = "JWT",
         Scheme = "Bearer"
     });
-    */
+    
     
 
     // Define o uso do Bearer no Swagger
-    /*options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
             new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -54,7 +59,7 @@ builder.Services.AddSwaggerGen(); /*(options =>
         }
     });
 });
-    */
+    
 builder.Services.AddSwaggerGen();
 // Registrar o ProjetoDePostContext com MySQL
 builder.Services.AddDbContext<ProjetoDePostContext>(options =>
@@ -62,24 +67,27 @@ builder.Services.AddDbContext<ProjetoDePostContext>(options =>
         builder.Configuration.GetConnectionString("ProjetoDePostConnection"),
         new MySqlServerVersion(new Version(8, 0, 23))
     ));
-/*
+
 builder.Services.AddAuthorization(options =>
 {
     // Política para AdminGlobal: Acesso a tudo na aplicação
     options.AddPolicy("AdminGlobal", policy =>
         policy.RequireRole("AdminGlobal"));
 
+   
+    /*
     // Política para AdminEmpresarial: Acesso a empresas específicas
     options.AddPolicy("AdminEmpresarial", policy =>
         policy.Requirements.Add(new EmpresaAdminRequirement()));
+    */
 });
-*/
+
 // Configura o Identity para usar o modelo de usuário personalizado
 builder.Services.AddIdentity<Usuario, IdentityRole>()
     .AddEntityFrameworkStores<ProjetoDePostContext>()
     .AddDefaultTokenProviders();
-/*
-// Configuração de autenticação
+
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -99,7 +107,31 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
-*/
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    })
+    .AddFluentValidation(config =>
+    {
+        config.RegisterValidatorsFromAssemblyContaining<SolicitacaoCadastroEmpresaDtoValidator>();
+        config.RegisterValidatorsFromAssemblyContaining<EmpresaCreateDtoValidator>();
+        config.RegisterValidatorsFromAssemblyContaining<UsuarioCreateDtoValidator>();
+
+    });
 // Configuração do AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 void RegisterServices(IServiceCollection services)
@@ -114,8 +146,11 @@ void RegisterServices(IServiceCollection services)
     services.AddScoped<IPostagemService, PostagemService>();
     services.AddScoped<IOpenAiService, OpenAiService>();
     services.AddScoped<IHistoricoCampanhaService,  HistoricoCampanhaService>();
+    services.AddScoped<INotificacaoService, NotificacaoService>();
+    services.AddScoped<IAuthService,AuthService>();
+    services.AddScoped<AuthService>();
+    services.AddSingleton<TokenRevocationService>();
 }
-
 void RegisterRepositories(IServiceCollection services)
 {
     services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -130,13 +165,13 @@ void RegisterRepositories(IServiceCollection services)
 }
 // Configuração do log
 
-builder.Logging.ClearProviders(); // Limpa os provedores padrão
-builder.Logging.AddConsole(); // Adiciona o provedor de log para o console
-// Funções para registar os serviços e repositórios.
+builder.Logging.ClearProviders(); 
+builder.Logging.AddConsole();
 RegisterServices(builder.Services);
 RegisterRepositories(builder.Services);
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -146,25 +181,26 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseMiddleware<TokenRevocationMiddleware>();
+app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-/*using (var scope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        await SeedDataService.CriarUsuarioAdministrador(services);
+        var tokenRevocationService = services.GetRequiredService<TokenRevocationService>();
+        // Chama o método de inicialização para criar roles e o AdminGlobal
+        await SeedDataService.InitializeAsync(services);
     }
     catch (Exception ex)
     {
-        // Log de erro (opcional)
-        Console.WriteLine($"Erro ao criar o usuário administrador: {ex.Message}");
+        Console.WriteLine($"Erro ao inicializar o seed: {ex.Message}");
     }
 }
-*/
 app.Run();

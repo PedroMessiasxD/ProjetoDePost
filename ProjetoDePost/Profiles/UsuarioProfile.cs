@@ -11,7 +11,8 @@ namespace ProjetoDePost.Profiles
             CreateMap<UsuarioCreateDto, Usuario>();
             CreateMap<Usuario, UsuarioLoginDto>();
 
-            CreateMap<Usuario, UsuarioReadDto>();
+            CreateMap<Usuario, UsuarioReadDto>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
         }
     }
 }

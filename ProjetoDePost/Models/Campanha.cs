@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ProjetoDePost.Models
 {
@@ -18,17 +19,18 @@ namespace ProjetoDePost.Models
         public int EmpresaId { get; set; }
         public Empresa Empresa { get; set; }
         public int FrequenciaMaxima { get; set; } = 10;
-        
+
         /// <summary>
         /// Coleção de posts gerenciados pelo projeto.
         /// </summary>
+        [JsonIgnore]
         public ICollection<Postagem> Postagens { get; set; } = new List<Postagem>();
         public ICollection<ParticipanteEmpresa> Participantes { get; set; } = new List<ParticipanteEmpresa>();
 
-        public string TemaPrincipal { get;set; } // Tema da campanha
-        public int Frequencia { get; set; } // Quantidade de post
+        public string TemaPrincipal { get;set; }
+        public int Frequencia { get; set; } 
 
-        public string Descricao { get; set; } // Descrição do prompt para o OpenAPI
+        public string Descricao { get; set; }
 
         public bool Aprovada { get; set; }
         public bool Ativa { get; set; }

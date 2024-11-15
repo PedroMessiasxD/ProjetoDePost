@@ -84,6 +84,13 @@ namespace ProjetoDePost.Services.Implementations
             return participanteEmpresaReadDto;
 
         }
+
+
+        public async Task<bool> VerificarSeUsuarioEstaAssociadoEmpresa(string usuarioId, int empresaId)
+        {
+            var participante = await _participanteEmpresaRepository.BuscarPorUsuarioIdEEmpresaIdAsync(usuarioId, empresaId);
+            return participante != null;
+        }
     }
 
 

@@ -6,7 +6,7 @@ using ProjetoDePost.Data.Repositories.Interfaces.Generic;
 using ProjetoDePost.Exceptions;
 using ProjetoDePost.Models;
 using ProjetoDePost.Services.Interfaces;
-using ProjetoDePost.Validations;
+using ProjetoDePost.Data.Validations;
 
 namespace ProjetoDePost.Services.Implementations
 {
@@ -18,14 +18,17 @@ namespace ProjetoDePost.Services.Implementations
         private readonly IParticipanteEmpresaRepository _participanteEmpresaRepository;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IParticipanteEmpresaService _participanteEmpresaService;
-        
-        public UsuarioService(IGenericRepository<Usuario> usuarioRepository, UserManager<Usuario> userManager, IMapper mapper, RoleManager<IdentityRole>roleManager, IParticipanteEmpresaService participanteEmpresaService)
+        private readonly INotificacaoService _notificacaoService;
+        public UsuarioService(IGenericRepository<Usuario> usuarioRepository, UserManager<Usuario> userManager, 
+            IMapper mapper, RoleManager<IdentityRole>roleManager, IParticipanteEmpresaService participanteEmpresaService,
+            INotificacaoService notificacaoService)
         {
             _usuarioRepository = usuarioRepository;
             _userManager = userManager;
             _mapper = mapper;
             _roleManager = roleManager;
             _participanteEmpresaService = participanteEmpresaService;
+            _notificacaoService = notificacaoService;
         }
 
         /// <summary>
@@ -41,11 +44,14 @@ namespace ProjetoDePost.Services.Implementations
                 throw new UsuarioCriacaoException(validationResult.Errors.First().ErrorMessage);
             }
             usuario.UserName = usuarioCreateDto.Email;
+            usuario.Email = usuarioCreateDto.Email;
+            
             var resultado = await _userManager.CreateAsync(usuario, usuarioCreateDto.Senha);
             if (!resultado.Succeeded)
             {
                 throw new UsuarioCriacaoException("Erro ao criar o usuário: " + string.Join(", ", resultado.Errors.Select(e => e.Description)));
             }
+               await _userManager.AddToRoleAsync(usuario, "usuario");
 
             return usuario;
         }
@@ -112,7 +118,7 @@ namespace ProjetoDePost.Services.Implementations
                 throw new KeyNotFoundException("Usuário não encontrado.");
             }
 
-            // Adiciona o usuário à role "Admin"
+            // Adiciona o usuário à role "AdminEmpresarial"
             var result = await _userManager.AddToRoleAsync(usuario, "AdminEmpresarial");
             return result.Succeeded;
         }
@@ -130,33 +136,46 @@ namespace ProjetoDePost.Services.Implementations
             }
             
             // Verificar se a role AdminEmpresarial já existe, caso contrário, criar
-            var roleExists = await _roleManager.RoleExistsAsync("AdminEmpresarial");
-            if (!roleExists)
+            var roleAdminExists = await _roleManager.RoleExistsAsync("AdminEmpresarial");
+            if (!roleAdminExists)
             {
-                var role = new IdentityRole("AdminEmpresarial");
-                await _roleManager.CreateAsync(role);
+                var roleAdmin = new IdentityRole("AdminEmpresarial");
+                await _roleManager.CreateAsync(roleAdmin);
             }
-
-            var addToRoleResult = await _userManager.AddToRoleAsync(usuario, "AdminEmpresarial");
-            if (!addToRoleResult.Succeeded)
+           
+            var roleParticipanteExists = await _roleManager.RoleExistsAsync("ParticipanteEmpresa");
+            if (!roleParticipanteExists)
             {
-                throw new Exception("Erro ao associar usuário à role AdminEmpresarial.");
+                var roleParticipante = new IdentityRole("ParticipanteEmpresa");
+                await _roleManager.CreateAsync(roleParticipante);
             }
-
-            // Verificar se o usuário já tem a role AdminEmpresarial, se não, adiciona
+            
+            // Atribuir a role AdminEmpresarial ao usuário, caso ainda não a tenha
             if (!await _userManager.IsInRoleAsync(usuario, "AdminEmpresarial"))
             {
-                await _userManager.AddToRoleAsync(usuario, "AdminEmpresarial");
+                var addToRoleAdminResult = await _userManager.AddToRoleAsync(usuario, "AdminEmpresarial");
+                if (!addToRoleAdminResult.Succeeded)
+                {
+                    throw new Exception("Erro ao associar usuário à role AdminEmpresarial.");
+                }
             }
 
-            // Cria o DTO de ParticipanteEmpresaCreateDto
+            if (!await _userManager.IsInRoleAsync(usuario, "ParticipanteEmpresa"))
+            {
+                var addToRoleParticipanteResult = await _userManager.AddToRoleAsync(usuario, "ParticipanteEmpresa");
+                if (!addToRoleParticipanteResult.Succeeded)
+                {
+                    throw new Exception("Erro ao associar usuário à role ParticipanteEmpresa.");
+                }
+            }
+
             var participanteEmpresaCreateDto = new ParticipanteEmpresaCreateDto
             {
                 UsuarioId = usuario.Id,
                 EmpresaId = empresaId,
-                Papel = "AdminEmpresarial"
+                Papel = "AdminEmpresarial" 
             };
-            
+
             await _participanteEmpresaService.AdicionarUsuarioNaEmpresaAsync(participanteEmpresaCreateDto);
 
             return true;
@@ -170,5 +189,7 @@ namespace ProjetoDePost.Services.Implementations
             var usuario = await _userManager.FindByEmailAsync(email);
             return usuario;
         }
+
+       
     }
 }

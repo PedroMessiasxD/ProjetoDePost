@@ -26,6 +26,7 @@ namespace ProjetoDePost.Services.Implementations
             solicitacao.Status = "Pendente";
             solicitacao.DataSolicitacao = DateTime.Now;
             solicitacao.UsuarioId = usuarioId;
+           
 
             _context.SolicitacoesCadastroEmpresa.Add(solicitacao);
             await _context.SaveChangesAsync();
@@ -34,6 +35,8 @@ namespace ProjetoDePost.Services.Implementations
             {
                 SolicitacaoId = solicitacao.Id,
                 Status = solicitacao.Status,
+                NomeAdministrador = solicitacao.NomeAdministrador,
+                EmailAdministrador = solicitacao.EmailAdministrador,
                 Mensagem = "Solicitação de cadastro criada com sucesso."
             };
         }

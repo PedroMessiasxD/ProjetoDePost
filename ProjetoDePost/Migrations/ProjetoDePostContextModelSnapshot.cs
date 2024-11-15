@@ -297,14 +297,9 @@ namespace ProjetoDePost.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("varchar(255)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AdministradorId");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Empresas");
                 });
@@ -327,7 +322,6 @@ namespace ProjetoDePost.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ConteudoGerado")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("DataCriacao")
@@ -412,14 +406,9 @@ namespace ProjetoDePost.Migrations
                     b.Property<bool>("Postado")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("UsuarioId")
-                        .HasColumnType("varchar(255)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CampanhaId");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Postagens");
                 });
@@ -522,17 +511,8 @@ namespace ProjetoDePost.Migrations
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
-                    b.Property<bool>("CadastroConfirmado")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("EAdministradorEmpresa")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsAdministradorGlobal")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -615,10 +595,6 @@ namespace ProjetoDePost.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ProjetoDePost.Models.Usuario", null)
-                        .WithMany("EmpresasCriadas")
-                        .HasForeignKey("UsuarioId");
-
                     b.Navigation("Administrador");
                 });
 
@@ -667,10 +643,6 @@ namespace ProjetoDePost.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjetoDePost.Models.Usuario", null)
-                        .WithMany("Postagens")
-                        .HasForeignKey("UsuarioId");
-
                     b.Navigation("Campanha");
                 });
 
@@ -701,11 +673,7 @@ namespace ProjetoDePost.Migrations
 
             modelBuilder.Entity("ProjetoDePost.Models.Usuario", b =>
                 {
-                    b.Navigation("EmpresasCriadas");
-
                     b.Navigation("ParticipanteEmpresas");
-
-                    b.Navigation("Postagens");
                 });
 #pragma warning restore 612, 618
         }

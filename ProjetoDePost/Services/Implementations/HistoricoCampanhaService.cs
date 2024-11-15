@@ -8,38 +8,34 @@ namespace ProjetoDePost.Services.Implementations
 {
     public class HistoricoCampanhaService : IHistoricoCampanhaService
     {
-        private readonly ICampanhaService _campanhaService;
-        private readonly IPostagemService _postagemService;
-        private readonly IMapper _mapper;     
+        private readonly IPostagemRepository _postagemRepository;
+        private readonly IMapper _mapper;
         private readonly IHistoricoCampanhaRepository _historicoCampanhaRepository;
 
-        public HistoricoCampanhaService(ICampanhaService campanhaService, IPostagemService postagemService,
+        public HistoricoCampanhaService(IPostagemRepository postagemRepository,
             IHistoricoCampanhaRepository historicoCampanhaRepository, IMapper mapper)
         {
-            _campanhaService = campanhaService;
-            _postagemService = postagemService;
+            _postagemRepository = postagemRepository;
             _historicoCampanhaRepository = historicoCampanhaRepository;
             _mapper = mapper;
         }
 
-        public async Task GuardarHistorico(Campanha campanha)
+        public async Task GuardarHistorico(Campanha campanha, string conteudoGerado = null)
         {
-            var postagens = await _postagemService.BuscarPorCampanhaIdAsync(campanha.Id);
-
-            if (campanha.Aprovada && campanha.Ativa)
+            var postagens = await _postagemRepository.BuscarPorCampanhaIdAsync(campanha.Id);
+            var historico = new HistoricoCampanha
             {
-                var historico = new HistoricoCampanha
-                {
-                    CampanhaId = campanha.Id,
-                    EmpresaId = campanha.EmpresaId,
-                    DataCriacao = DateTime.Now,
-                    ConteudoGerado = postagens.FirstOrDefault()?.ConteudoGerado,
-                    Aprovada = campanha.Aprovada,
-                    Ativa = campanha.Ativa
-                };
-
-                await _historicoCampanhaRepository.AdicionarHistoricoAsync(historico);
-            }
+                CampanhaId = campanha.Id,
+                EmpresaId = campanha.EmpresaId,
+                DataCriacao = DateTime.Now,
+                ConteudoGerado = conteudoGerado ?? postagens.FirstOrDefault()?.ConteudoGerado,
+                Aprovada = campanha.Aprovada,
+                Ativa = campanha.Ativa,
+                Nome = campanha.Nome,
+                NomeCampanha = campanha.Nome,
+                TemaPrincipal = campanha.TemaPrincipal
+            };
+           await _historicoCampanhaRepository.AdicionarHistoricoAsync(historico);
         }
 
         public async Task<List<HistoricoCampanhaDto>> ObterHistoricoPorEmpresaAsync(int empresaId)

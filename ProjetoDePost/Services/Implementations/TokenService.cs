@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ProjetoDePost.Models;
 using ProjetoDePost.Services.Interfaces;
@@ -13,38 +14,42 @@ namespace ProjetoDePost.Services.Implementations
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
+        private readonly UserManager<Usuario> _userManager;
 
-        public TokenService(IConfiguration configuration)
+        public TokenService(IConfiguration configuration, UserManager<Usuario> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
         }
 
-        public string GerarToken(Usuario usuario)
+        public async Task<string> GerarToken(Usuario usuario)
         {
+            var roles = await _userManager.GetRolesAsync(usuario);
+
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-                new Claim(ClaimTypes.Name, usuario.UserName),
-                new Claim(ClaimTypes.Role, "AdminGlobal"),
-                new Claim(ClaimTypes.Role, "AdminEmpresarial")
+                new Claim(ClaimTypes.Name, usuario.UserName)
+              
             };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(1),
-                SigningCredentials = credentials,
-                Issuer = _configuration["Jwt:Issuer"],
-                Audience = _configuration["Jwt:Audience"]
-            };
+            var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(30),
+            signingCredentials: credentials);
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

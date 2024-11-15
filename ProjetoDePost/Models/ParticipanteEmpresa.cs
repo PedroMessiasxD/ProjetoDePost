@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ProjetoDePost.Models
 {
@@ -32,7 +33,8 @@ namespace ProjetoDePost.Models
         /// Relacionamento com a campanha
         /// </summary>
         [ForeignKey("Campanha")]
-        public int? CampanhaId { get; set; } 
+        public int? CampanhaId { get; set; }
+        [JsonIgnore]
         public Campanha Campanha { get; set; }
 
         /// <summary>

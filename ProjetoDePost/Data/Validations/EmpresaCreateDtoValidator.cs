@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
 using ProjetoDePost.Data.DTOs;
 
-namespace ProjetoDePost.Validations
+
+namespace ProjetoDePost.Data.Validations
 {
     public class EmpresaCreateDtoValidator : AbstractValidator<EmpresaCreateDto>
     {
