@@ -14,7 +14,7 @@ namespace ProjetoDePost.Data.Validations
 
             RuleFor(x => x.Senha)
             .NotEmpty().WithMessage("A senha é obrigatória.")
-            .MinimumLength(8).WithMessage("A senha deve ter no mínimo 8 caracteres.")
+            .MinimumLength(6).WithMessage("A senha deve ter no mínimo 8 caracteres.")
             .MaximumLength(16).WithMessage("A senha deve ter no máximo 16 caracteres.")
             .Matches(@"[A-Z]").WithMessage("A senha deve conter pelo menos uma letra maiúscula.")
             .Matches(@"[a-z]").WithMessage("A senha deve conter pelo menos uma letra minúscula.")

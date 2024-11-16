@@ -59,7 +59,7 @@ namespace ProjetoDePost.Services.Implementations
             solicitacao.Status = "Aprovada";
             await _context.SaveChangesAsync();
 
-            // Cria a nova empresa
+            
             var empresaDto = new EmpresaCreateDto
             {
                 Nome = solicitacao.NomeEmpresa,

@@ -25,12 +25,12 @@ using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    // Adiciona a configuração de segurança
+ 
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
@@ -40,10 +40,7 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT",
         Scheme = "Bearer"
     });
-    
-    
 
-    // Define o uso do Bearer no Swagger
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
@@ -61,7 +58,7 @@ builder.Services.AddSwaggerGen(options =>
 });
     
 builder.Services.AddSwaggerGen();
-// Registrar o ProjetoDePostContext com MySQL
+
 builder.Services.AddDbContext<ProjetoDePostContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("ProjetoDePostConnection"),
@@ -70,7 +67,6 @@ builder.Services.AddDbContext<ProjetoDePostContext>(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    // Política para AdminGlobal: Acesso a tudo na aplicação
     options.AddPolicy("AdminGlobal", policy =>
         policy.RequireRole("AdminGlobal"));
 
@@ -82,7 +78,8 @@ builder.Services.AddAuthorization(options =>
     */
 });
 
-// Configura o Identity para usar o modelo de usuário personalizado
+
+
 builder.Services.AddIdentity<Usuario, IdentityRole>()
     .AddEntityFrameworkStores<ProjetoDePostContext>()
     .AddDefaultTokenProviders();
@@ -130,9 +127,13 @@ builder.Services.AddControllers()
         config.RegisterValidatorsFromAssemblyContaining<SolicitacaoCadastroEmpresaDtoValidator>();
         config.RegisterValidatorsFromAssemblyContaining<EmpresaCreateDtoValidator>();
         config.RegisterValidatorsFromAssemblyContaining<UsuarioCreateDtoValidator>();
+        config.RegisterValidatorsFromAssemblyContaining<CampanhaCreateDtoValidator>();
+        config.RegisterValidatorsFromAssemblyContaining<ParticipanteEmpresaCreateDtoValidator>();
+        config.RegisterValidatorsFromAssemblyContaining<UsuarioLoginDtoValidator>();
+        config.RegisterValidatorsFromAssemblyContaining<PostagemCreateDtoValidator>();
 
     });
-// Configuração do AutoMapper
+
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 void RegisterServices(IServiceCollection services)
 {
@@ -163,7 +164,6 @@ void RegisterRepositories(IServiceCollection services)
     services.AddScoped<ISolicitacaoCampanhaRepository, SolicitacaoCampanhaRepository>();
     services.AddScoped<IHistoricoCampanhaRepository, HistoricoCampanhaRepository>();
 }
-// Configuração do log
 
 builder.Logging.ClearProviders(); 
 builder.Logging.AddConsole();
@@ -172,8 +172,6 @@ RegisterRepositories(builder.Services);
 
 var app = builder.Build();
 
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -195,7 +193,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var tokenRevocationService = services.GetRequiredService<TokenRevocationService>();
-        // Chama o método de inicialização para criar roles e o AdminGlobal
+        
         await SeedDataService.InitializeAsync(services);
     }
     catch (Exception ex)

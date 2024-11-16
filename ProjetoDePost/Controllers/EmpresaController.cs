@@ -22,9 +22,7 @@ namespace ProjetoDePost.Controllers
             _empresaService = empresaService;
         }
 
-        /// <summary>
-        /// Solicita o cadastro de uma nova empresa.
-        /// </summary>
+        [Authorize]
         [HttpPost("solicitar-cadastro")]
         public async Task<IActionResult> SolicitarCadastro([FromBody] SolicitacaoCadastroEmpresaDto empresaDto)
         {
@@ -45,9 +43,7 @@ namespace ProjetoDePost.Controllers
             }
         }
 
-        /// <summary>
-        /// Obtém todas as empresas. Somente Admin Global pode acessar.
-        /// </summary>
+        [Authorize]
         [HttpGet("todas")]
         public async Task<IActionResult> ObterTodasAsEmpresas()
         {

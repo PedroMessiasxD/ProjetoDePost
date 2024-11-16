@@ -13,7 +13,7 @@ namespace ProjetoDePost.Models
 
         [ForeignKey("Administrador")]
         public string AdministradorId {  get; set; }
-        public Usuario Administrador { get; set; } // Referência para o Usuário que é o administrador dessa empresa!
+        public Usuario Administrador { get; set; } 
 
         public ICollection<ParticipanteEmpresa> Participantes { get; set; } = new List<ParticipanteEmpresa>();
         

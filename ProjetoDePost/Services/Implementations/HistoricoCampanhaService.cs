@@ -11,13 +11,16 @@ namespace ProjetoDePost.Services.Implementations
         private readonly IPostagemRepository _postagemRepository;
         private readonly IMapper _mapper;
         private readonly IHistoricoCampanhaRepository _historicoCampanhaRepository;
+        private readonly IParticipanteEmpresaService _participanteEmpresaService;
 
         public HistoricoCampanhaService(IPostagemRepository postagemRepository,
-            IHistoricoCampanhaRepository historicoCampanhaRepository, IMapper mapper)
+            IHistoricoCampanhaRepository historicoCampanhaRepository, IMapper mapper,
+            IParticipanteEmpresaService participanteEmpresaService)
         {
             _postagemRepository = postagemRepository;
             _historicoCampanhaRepository = historicoCampanhaRepository;
             _mapper = mapper;
+            _participanteEmpresaService = participanteEmpresaService;
         }
 
         public async Task GuardarHistorico(Campanha campanha, string conteudoGerado = null)
@@ -38,8 +41,13 @@ namespace ProjetoDePost.Services.Implementations
            await _historicoCampanhaRepository.AdicionarHistoricoAsync(historico);
         }
 
-        public async Task<List<HistoricoCampanhaDto>> ObterHistoricoPorEmpresaAsync(int empresaId)
+        public async Task<List<HistoricoCampanhaDto>> ObterHistoricoPorEmpresaAsync(int empresaId, string usuarioId)
         {
+            var estaVinculado = await _participanteEmpresaService.VerificarSeUsuarioEstaAssociadoEmpresa(usuarioId, empresaId);
+            if (!estaVinculado)
+                throw new UnauthorizedAccessException("Você não tem permissão para acessar o histórico dessa empresa.");
+
+
             var historicos = await _historicoCampanhaRepository.ObterHistoricoPorEmpresaAsync(empresaId);
             Console.WriteLine($"Mapeando {historicos.Count} registros para HistoricoCampanhaDto");
             return _mapper.Map<List<HistoricoCampanhaDto>>(historicos);

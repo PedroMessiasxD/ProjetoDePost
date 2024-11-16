@@ -1,4 +1,6 @@
-﻿namespace ProjetoDePost.Data.DTOs
+﻿using ProjetoDePost.Models;
+
+namespace ProjetoDePost.Data.DTOs
 {
     public class CampanhaCreateDto
     {
@@ -7,6 +9,5 @@
         public string TemaPrincipal { get; set; }
         public int Frequencia { get; set; }
         public string Descricao { get; set; }
-    
     }
 }

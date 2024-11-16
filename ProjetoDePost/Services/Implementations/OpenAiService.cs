@@ -7,10 +7,6 @@ using ProjetoDePost.Services.Interfaces;
 
 namespace ProjetoDePost.Services.Implementations
 {
-    /// <summary>
-    /// Serviço que integra com a API da OpenAI para gerar ideias de postagem automaticamente.
-    /// Utiliza a descrição, tema e frequência da campanha para gerar respostas baseadas no prompt.
-    /// </summary>
     public class OpenAiService : IOpenAiService
     {
         private readonly string _apiKey;

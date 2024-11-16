@@ -2,12 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using ProjetoDePost.Data.DTOs;
 using ProjetoDePost.Services.Interfaces;
+using System.Security.Claims;
 
 namespace ProjetoDePost.Controllers
 {
-    /// <summary>
-    /// Controller para gerenciar as campanhas, incluindo operações de criação, leitura, atualização, exclusão e aprovação.
-    /// </summary>
+   
     
     [Route("api/[controller]")]
     [ApiController]
@@ -20,10 +19,6 @@ namespace ProjetoDePost.Controllers
             _campanhaService = campanhaService;
         }
 
-        /// <summary>
-        /// Cria uma nova campanha.
-        /// </summary>
-       
         [HttpPost]
         public async Task<IActionResult> CriarCampanha([FromBody] CampanhaCreateDto campanhaDto)
         {
@@ -33,32 +28,40 @@ namespace ProjetoDePost.Controllers
             var campanha = await _campanhaService.CriarCampanhaAsync(campanhaDto);
             return CreatedAtAction(nameof(ObterPorId), new { id = campanha.Id }, campanha);
         }
-        /// <summary>
-        /// Obtém uma campanha específica pelo ID.
-        /// </summary>
+      
         [HttpGet("{id}")]
         public async Task<IActionResult> ObterPorId(int id)
         {
             var campanha = await _campanhaService.ObterPorIdAsync(id);
+
             if (campanha == null)
                 return NotFound("Campanha não encontrada.");
 
             return Ok(campanha);
         }
 
-        /// <summary>
-        /// Obtém todas as campanhas de uma empresa.
-        /// </summary>
+
+        [Authorize]
         [HttpGet("empresa/{empresaId}")]
         public async Task<IActionResult> ObterTodasPorEmpresa(int empresaId)
         {
-            var campanhas = await _campanhaService.ObterTodasPorEmpresaAsync(empresaId);
-            return Ok(campanhas.ToList());
+            try
+            {
+                var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var campanhas = await _campanhaService.ObterTodasPorEmpresaAsync(empresaId, usuarioId);
+                return Ok(campanhas.ToList());
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao buscar campanhas: {ex.Message}");
+            }
         }
 
-        /// <summary>
-        /// Obtém campanhas vinculadas a um participante específico.
-        /// </summary>
         [HttpGet("participante/{participanteId}")]
         public async Task<IActionResult> ObterVinculadasAoParticipante(int participanteId)
         {
@@ -70,14 +73,24 @@ namespace ProjetoDePost.Controllers
             return Ok(campanhas);
         }
 
-        /// <summary>
-        /// Obtém todas as solicitações de campanha pendentes.
-        /// </summary>
+        [Authorize]
         [HttpGet("solicitacoes/pendentes")]
-        public async Task<IActionResult> ObservarSolicitacoesCampanha()
+        public async Task<IActionResult> ObservarSolicitacoesCampanha(int empresaId)
         {
-            var solicitacoesPendentes = await _campanhaService.ObservarSolicitacoesAsync();
-            return Ok(solicitacoesPendentes);
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var solicitacoesPendentes = await _campanhaService.ObservarSolicitacoesAsync(usuarioId, empresaId);
+                return Ok(solicitacoesPendentes);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao observar solicitações: {ex.Message}");
+            }
         }
 
 

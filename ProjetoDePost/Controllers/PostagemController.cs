@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjetoDePost.Data.DTOs;
 using ProjetoDePost.Services.Interfaces;
@@ -17,9 +18,7 @@ namespace ProjetoDePost.Controllers
             _postagemService = postagemService;
             _mapper = mapper;
         }
-        /// <summary>
-        /// Obtém todas as postagens de uma campanha específica.
-        /// </summary>
+      
         [HttpGet("campanha/{campanhaId}")]
         public async Task<ActionResult<IEnumerable<PostagemReadDto>>> ObterPostagensPorCampanha(int campanhaId)
         {
@@ -38,9 +37,7 @@ namespace ProjetoDePost.Controllers
             }
         }
 
-        /// <summary>
-        /// Cria uma nova postagem.
-        /// </summary>
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<PostagemReadDto>> CriarPostagemAsync(PostagemCreateDto postagemCreateDto)
         {
@@ -55,9 +52,7 @@ namespace ProjetoDePost.Controllers
             }
         }
        
-        /// <summary>
-        /// Obtém uma postagem específica pelo ID.
-        /// </summary>
+      
         [HttpGet("{id}")]
         public async Task<ActionResult<PostagemReadDto>> ObterPostagemPorId(int id)
         {
@@ -76,9 +71,6 @@ namespace ProjetoDePost.Controllers
             }
         }
 
-        /// <summary>
-        /// Deleta uma postagem existente.
-        /// </summary>
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeletarPostagemAsync(int id)
         {

@@ -19,9 +19,10 @@ namespace ProjetoDePost.Profiles
                 
             // Mapeamento para criação (Create)
             CreateMap<ParticipanteEmpresaCreateDto, ParticipanteEmpresa>()
-                .ForMember(dest => dest.Papel, opt => opt.MapFrom(src => src.Papel))
-                .ForMember(dest => dest.UsuarioId, opt => opt.MapFrom(src => src.UsuarioId))
-                .ForMember(dest => dest.Papel, opt => opt.MapFrom(src => src.Papel));
+                 .ForMember(dest => dest.UsuarioId, opt => opt.MapFrom(src => src.UsuarioId))
+                 .ForMember(dest => dest.EmpresaId, opt => opt.Ignore())  
+                 .ForMember(dest => dest.CampanhaId, opt => opt.Ignore())
+                 .ForMember(dest => dest.Papel, opt => opt.MapFrom(src => src.Papel));
             // Mapeamento para atualização (Update)
             CreateMap<ParticipanteEmpresaUpdateDto, ParticipanteEmpresa>()
                 .ForMember(dest => dest.Papel, opt => opt.MapFrom(src => src.Papel));

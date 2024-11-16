@@ -4,10 +4,6 @@ using ProjetoDePost.Models;
 
 namespace ProjetoDePost.Data
 {
-    /// <summary>
-    /// Contexto de banco de dados para a aplicação ProjetoDePost.
-    /// Define os DbSets para as entidades e configura as relações entre elas.
-    /// </summary>
     public class ProjetoDePostContext : IdentityDbContext
     {
         public ProjetoDePostContext(DbContextOptions<ProjetoDePostContext> options) :

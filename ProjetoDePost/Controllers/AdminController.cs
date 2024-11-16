@@ -7,7 +7,6 @@ using System.Security.Claims;
 
 namespace ProjetoDePost.Controllers
 {
-    //[Authorize(Policy = "AdminGlobal")]
     [ApiController]
     [Route("api/[controller]")]
     public class AdminController : ControllerBase
@@ -22,23 +21,12 @@ namespace ProjetoDePost.Controllers
             _solicitacaoCadastroEmpresaService = solicitacaoCadastroEmpresaService;
              
         }
-
-        /// <summary>
-        /// Lista todos os usuários no sistema.
-        /// </summary>
-        /// <returns>Uma lista de usuários.</returns>
         [HttpGet("usuarios")]
         public async Task<IActionResult> ListarUsuarios()
         {
             var usuarios = await _usuarioService.BuscarTodosUsuariosAsync();
             return Ok(usuarios);
         }
-
-
-        /// <summary>
-        /// Promove um usuário a administrador.
-        /// </summary>
-        /// <returns>Uma resposta indicando o sucesso ou falha da operação.</returns>
 
         [Authorize(Policy = "AdminGlobal")]
         [HttpPost("promover-usuario-email")]
@@ -59,10 +47,6 @@ namespace ProjetoDePost.Controllers
             }
 
         }
-
-        /// <summary>
-        /// Lista as solicitações de cadastro do usuário atual. Somente Admin Global pode acessar.
-        /// </summary>
         
         [Authorize(Policy = "AdminGlobal")]
         [HttpGet("solicitacoes")]
@@ -76,11 +60,7 @@ namespace ProjetoDePost.Controllers
                 return Ok(solicitacoes);
             }
         }
-
-        /// <summary>
-        /// Aprova uma solicitação de cadastro. Somente Admin Global pode acessar.
-        /// </summary>
-       
+        
         [Authorize(Policy = "AdminGlobal")]
         [HttpPost("aprovar-solicitacao/{solicitacaoId}")]
         public async Task<IActionResult> AprovarSolicitacao(int solicitacaoId)
@@ -101,10 +81,6 @@ namespace ProjetoDePost.Controllers
 
             }
         }
-
-        /// <summary>
-        /// Recusa uma solicitação de cadastro. Somente Admin Global pode acessar.
-        /// </summary>
 
         [Authorize(Policy = "AdminGlobal")]
         [HttpPost("recusar-solicitacao/{solicitacaoId}")]

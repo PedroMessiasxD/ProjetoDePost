@@ -4,16 +4,10 @@ using System.Text.Json.Serialization;
 
 namespace ProjetoDePost.Models
 {
-    /// <summary>
-    /// Representa uma postagem gerada ou criada manualmente em um projeto.
-    /// </summary>
     public class Postagem
     {
         public int Id { get; set; }
-        
-        /// <summary>
-        /// Identificador do projeto ao qual a postagem pertence.
-        /// </summary>
+
         [ForeignKey("Campanha")]
         public int CampanhaId { get; set; }
         [JsonIgnore]

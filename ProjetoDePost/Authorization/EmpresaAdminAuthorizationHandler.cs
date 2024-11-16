@@ -6,25 +6,18 @@ using System.Security.Claims;
 
 namespace ProjetoDePost.Authorization
 {
-    /// <summary>
-    /// Manipulador para verificar se o usuário possui permissão administrativa para uma empresa.
-    /// </summary>
+
 
     public class EmpresaAdminAuthorizationHandler : AuthorizationHandler<EmpresaAdminRequirement, int>
     {
         private readonly IParticipanteEmpresaService _participanteEmpresaService;
 
-        /// <summary>
-        /// Construtor que injeta o repositório de ParticipanteEmpresa.
-        /// </summary>
+ 
         public EmpresaAdminAuthorizationHandler(IParticipanteEmpresaService participanteEmpresaService)
         {
             _participanteEmpresaService = participanteEmpresaService;
         }
 
-        /// <summary>
-        /// Manipula a autorização para verificar se o usuário é administrador da empresa especificada.
-        /// </summary>
 
         protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
@@ -42,7 +35,6 @@ namespace ProjetoDePost.Authorization
                 return;
             }
 
-            // Aqui estamos tentando acessar o contexto da requisição
             if (context.Resource is HttpContext httpContext)
             {
                 if (httpContext.Request.RouteValues.ContainsKey("empresaId"))
@@ -51,10 +43,10 @@ namespace ProjetoDePost.Authorization
 
                     if (int.TryParse(empresaIdFromRoute, out var empresaIdParsed))
                     {
-                        // Verifica se o usuário é administrador da empresa
+                        
                         if (await _participanteEmpresaService.UsuarioEhAdminEmpresaAsync(usuarioId, empresaIdParsed))
                         {
-                            context.Succeed(requirement); // Usuário tem permissão
+                            context.Succeed(requirement);
                         }
                     }
                 }

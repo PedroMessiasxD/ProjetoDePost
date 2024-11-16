@@ -37,11 +37,6 @@ namespace ProjetoDePost.Controllers
             _authService = authService;
         }
 
-
-
-        ///<summary>
-        /// Registrando um novo usuário
-        /// </summary>
         [HttpPost("registro")]
         public async Task<IActionResult> Registro([FromBody] UsuarioCreateDto usuarioCreateDto)
         {
@@ -53,9 +48,6 @@ namespace ProjetoDePost.Controllers
             return await _authService.Registrar(usuarioCreateDto);
         }
 
-        ///<summary>
-        /// Logando um usuário
-        /// </summary>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UsuarioLoginDto model)
         {
@@ -68,7 +60,7 @@ namespace ProjetoDePost.Controllers
              return await _authService.ConfirmarEmail(email);
         }
         
-        //[Authorize]
+        [Authorize]
         [HttpPost("logout")]
         public ActionResult Logout([FromServices] AuthService authService)
         {          

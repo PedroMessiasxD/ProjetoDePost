@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using ProjetoDePost.Data;
 using ProjetoDePost.Data.DTOs;
 using ProjetoDePost.Data.Repositories.Implementations;
 using ProjetoDePost.Data.Repositories.Interfaces;
+using ProjetoDePost.Data.Validations;
 using ProjetoDePost.Models;
 using ProjetoDePost.Services.Implementations;
 using ProjetoDePost.Services.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace ProjetoDePost.Services
 {
@@ -22,11 +25,15 @@ namespace ProjetoDePost.Services
         private readonly IPostagemRepository _postagemRepository;
         private readonly ILogger<CampanhaService> _logger;
         private readonly IHistoricoCampanhaService _historicoCampanhaService;
+        private readonly IParticipanteEmpresaService _participanteEmpresaService;
+        private readonly IValidator<CampanhaCreateDto> _validator;
+        private readonly IParticipanteEmpresaRepository _participanteEmpresaRepository;
 
         public CampanhaService(ICampanhaRepository campanhaRepository,
             IMapper mapper, ISolicitacaoCampanhaRepository solicitacaoCampanhaRepository,
             ProjetoDePostContext context, ILogger<CampanhaService> logger,
-             IHistoricoCampanhaService historicoCampanhaService)
+             IHistoricoCampanhaService historicoCampanhaService, IParticipanteEmpresaService participanteEmpresaService,
+             IValidator<CampanhaCreateDto> validator, IParticipanteEmpresaRepository participanteEmpresaRepository)
         {
             _campanhaRepository = campanhaRepository;
             _mapper = mapper;
@@ -34,6 +41,9 @@ namespace ProjetoDePost.Services
             _context = context;
             _logger = logger;
             _historicoCampanhaService = historicoCampanhaService;
+            _participanteEmpresaService = participanteEmpresaService;
+            _validator = validator;
+            _participanteEmpresaRepository = participanteEmpresaRepository;
         }
 
         /// <summary>
@@ -58,8 +68,13 @@ namespace ProjetoDePost.Services
         /// <summary>
         /// Obtém todas as campanhas de uma empresa específica.
         /// </summary>
-        public async Task<IEnumerable<CampanhaReadDto>> ObterTodasPorEmpresaAsync(int empresaId)
+        public async Task<IEnumerable<CampanhaReadDto>> ObterTodasPorEmpresaAsync(int empresaId, string usuarioId)
         {
+            var usuarioVinculado = await _participanteEmpresaRepository.BuscarPorUsuarioIdEEmpresaIdAsync(usuarioId, empresaId);
+
+            if (usuarioVinculado == null)
+                throw new UnauthorizedAccessException("Você não está vinculado a esta empresa.");
+
             var campanhas = await _campanhaRepository.ObterCampanhasPorEmpresaAsync(empresaId);
             return _mapper.Map<IEnumerable<CampanhaReadDto>>(campanhas);
         }
@@ -101,15 +116,42 @@ namespace ProjetoDePost.Services
         /// <summary>
         /// Aprova uma campanha, alterando seu status para aprovado.
         /// </summary>
-        public async Task<Campanha> AceitarCampanha(int solicitacaoCampanhaId)
+        public async Task<Campanha> AceitarCampanha(int solicitacaoCampanhaId, string usuarioId)
         {
             var solicitacao = await _solicitacaoCampanhaRepository.BuscarPorIdAsync(solicitacaoCampanhaId);
             if (solicitacao == null)
                 throw new KeyNotFoundException("Solicitação de campanha não encontrada.");
 
+            var isAdminEmpresarial = await _participanteEmpresaService.VerificarSeUsuarioEhAdminEmpresarial(usuarioId, solicitacao.EmpresaId);
+            if (!isAdminEmpresarial)
+                throw new UnauthorizedAccessException("Você não tem permissão para aceitar solicitações dessa empresa.");
+
             var novaCampanha = _mapper.Map<Campanha>(solicitacao);
             novaCampanha.Aprovada = true;
             novaCampanha.Ativa = false;
+
+            var validator = new CampanhaCreateDtoValidator();
+            var validationResult = await validator.ValidateAsync(new CampanhaCreateDto
+            {
+                Nome = novaCampanha.Nome,
+                EmpresaId = novaCampanha.EmpresaId,
+                TemaPrincipal = novaCampanha.TemaPrincipal,
+                Frequencia = novaCampanha.Frequencia,
+                Descricao = novaCampanha.Descricao
+            });
+
+            if (!validationResult.IsValid)
+                throw new FluentValidation.ValidationException(validationResult.Errors);
+
+            var participantes = await _participanteEmpresaRepository.ObterParticipantesPorEmpresaIdAsync(solicitacao.EmpresaId);
+            novaCampanha.Participantes = participantes.Select(p => new ParticipanteEmpresa
+            {
+                UsuarioId = p.UsuarioId,
+                EmpresaId = p.EmpresaId,
+                CampanhaId = novaCampanha.Id,
+                Papel = p.Papel,
+                DataEntrada = DateTime.UtcNow
+            }).ToList();
             await _campanhaRepository.CriarAsync(novaCampanha);
 
             await _historicoCampanhaService.GuardarHistorico(novaCampanha);
@@ -121,7 +163,7 @@ namespace ProjetoDePost.Services
             return novaCampanha;
         }
 
-        public async Task RecusarCampanha(int solicitacaoCampanhaId)
+        public async Task RecusarCampanha(int solicitacaoCampanhaId, string usuarioId)
         {
             var solicitacao = await _solicitacaoCampanhaRepository.BuscarPorIdAsync(solicitacaoCampanhaId);
 
@@ -129,6 +171,11 @@ namespace ProjetoDePost.Services
             {
                 throw new KeyNotFoundException("Solicitação de campanha não encontrada.");
             }
+
+            var isAdminEmpresarial = await _participanteEmpresaService.VerificarSeUsuarioEhAdminEmpresarial(usuarioId, solicitacao.EmpresaId);
+            if (!isAdminEmpresarial)
+                throw new UnauthorizedAccessException("Você não tem permissão para recusar solicitações dessa empresa.");
+
             solicitacao.Aprovada = false;
             await _solicitacaoCampanhaRepository.AtualizarAsync(solicitacao);
 
@@ -147,8 +194,12 @@ namespace ProjetoDePost.Services
             return solicitacao;
         }
 
-        public async Task<IEnumerable<SolicitacaoCampanhaReadDto>> ObservarSolicitacoesAsync()
+        public async Task<IEnumerable<SolicitacaoCampanhaReadDto>> ObservarSolicitacoesAsync(string usuarioId, int empresaId)
         {
+            var isAdminEmpresarial = await _participanteEmpresaService.VerificarSeUsuarioEhAdminEmpresarial(usuarioId, empresaId);
+            if (!isAdminEmpresarial)
+                throw new UnauthorizedAccessException("Você não tem permissão para observar as solicitações dessa empresa.");
+
             var solicitacoesPendentes = await _solicitacaoCampanhaRepository.ObterSolicitacoesPendentesAsync();
             var solicitacoesPendentesDto = _mapper.Map<IEnumerable<SolicitacaoCampanhaReadDto>>(solicitacoesPendentes);
             return solicitacoesPendentesDto;

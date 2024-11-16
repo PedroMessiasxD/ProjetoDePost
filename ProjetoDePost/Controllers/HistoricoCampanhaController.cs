@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProjetoDePost.Models;
 using ProjetoDePost.Services.Interfaces;
+using System.Security.Claims;
 
 namespace ProjetoDePost.Controllers
 {
@@ -15,18 +17,30 @@ namespace ProjetoDePost.Controllers
             _historicoCampanhaService = historicoCampanhaService;
         }
 
-        // GET api/historicocampanha/{empresaId}
+        [Authorize]
         [HttpGet("{empresaId}")]
         public async Task<ActionResult<HistoricoCampanha>> GetHistoricoPorEmpresa(int empresaId)
         {
-            var historicoCampanha = await _historicoCampanhaService.ObterHistoricoPorEmpresaAsync(empresaId);
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+            var historicoCampanha = await _historicoCampanhaService.ObterHistoricoPorEmpresaAsync(empresaId,usuarioId);
 
             if (historicoCampanha == null)
             {
                 return NotFound($"Não foi encontrado histórico para a empresa com ID {empresaId}.");
             }
-
             return Ok(historicoCampanha);
+
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message); // Retorna 401 caso o usuário não tenha acesso
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao buscar histórico: {ex.Message}");
+            }
         }
     }
 }
